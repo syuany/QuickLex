@@ -171,5 +171,5 @@ cython_debug/
 .pypirc
 
 # dictionary too big
-resources/
-resources/data
+# resources/
+resources/data/
