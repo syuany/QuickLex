@@ -169,7 +169,10 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+<<<<<<< HEAD
 
 # dictionary too big
 # resources/
 resources/data/
+=======
+>>>>>>> e0b58b47c13d711cfe7c13cddea20c11fab6f6ca
