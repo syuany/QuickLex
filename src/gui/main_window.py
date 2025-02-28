@@ -1,7 +1,9 @@
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QLabel, QTextEdit
+from PyQt5.QtCore import Qt, QTimer, QRegExp
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QTextEdit
+from PyQt5.QtGui import QRegExpValidator
 from core.database import DictionaryDB
-from typing import Optional, Dict
+from typing import Optional, List, Dict
+import re
 
 
 class MainWindow(QWidget):
@@ -36,6 +38,7 @@ class MainWindow(QWidget):
 
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
+        self.input_box.setValidator(QRegExpValidator(QRegExp("[a-zA-Z ]*")))
         self.input_box.textChanged.connect(self.on_text_changed)
 
     def on_text_changed(self, text):
@@ -43,8 +46,6 @@ class MainWindow(QWidget):
         if text.strip():
             self.result_area.setText("搜索中...")
             self.search_timer.start(200)
-            # result = self.db.query_word(text.strip())
-            # self.display_results(result)
         else:
             self.result_area.clear()
 
@@ -53,7 +54,7 @@ class MainWindow(QWidget):
         results = self.db.fuzzy_query(query_text)
         self.display_results(results)
 
-    def display_results(self, results: Optional[Dict]):
+    def display_results(self, results: Optional[List[Dict]]):
         if not results:
             self.result_area.setText("未找到该单词")
             return
@@ -61,37 +62,38 @@ class MainWindow(QWidget):
         result_text = ""
         keyword = self.input_box.text().strip()
 
+        # 创建正则表达式，忽略大小写
+        keyword_regex = re.compile(re.escape(keyword), re.IGNORECASE)
+
         for idx, item in enumerate(results, 1):
             word = item.get("word", "")
             phonetic = item.get("phonetic", "")
             definition = item.get("definition", "")
             translation = item.get("translation", "")
 
-            # formatted_word = word.replace(keyword, f'<span style="color: #FF6600;">{keyword}</span>')
-            # formatted_phonetic = phonetic.replace(keyword, f'<span style="color: #FF6600;">{keyword}</span>')
-            # formatted_definition = definition.replace(keyword, f'<span style="color: #FF6600;">{keyword}</span>')
-            # formatted_translation = translation.replace(keyword, f'<span style="color: #FF6600;">{keyword}</span>')
+            # 使用正则表达式替换关键字
+            formatted_word = keyword_regex.sub(
+                r'<span style="color: #FF6600;">\g<0></span>', word
+            )
+            formatted_phonetic = keyword_regex.sub(
+                r'<span style="color: #FF6600;">\g<0></span>', phonetic
+            )
+            formatted_definition = keyword_regex.sub(
+                r'<span style="color: #FF6600;">\g<0></span>', definition
+            )
+            formatted_translation = keyword_regex.sub(
+                r'<span style="color: #FF6600;">\g<0></span>', translation
+            )
 
             result_text += f"""
-            <p><strong>{word}</strong> {phonetic}</p>
-            <p>{definition}</p>
-            <p>{translation}</p>
+            <p><strong>{formatted_word}</strong> {phonetic}</p>
+            <p>{formatted_definition}</p>
+            <p>{formatted_translation}</p>
             """
             if phonetic:
                 result_text = result_text.replace(phonetic, f"[{phonetic}]")
-        if keyword:
-            result_text = result_text.replace(
-                keyword, f'<span style="color: #FF6600;">{keyword}</span>'
-            )
-        self.result_area.setHtml(result_text)
 
-        # text = f"""
-        # 【单词】{result['word']}
-        # 【音标】{result['phonetic']}
-        # 【释义】{result['definition']}
-        # 【翻译】{result['translation']}
-        # """
-        # self.result_area.setText(text)
+        self.result_area.setHtml(result_text)
 
     def toggle_visibility(self):
         # 切换窗口的可见性，显示或隐藏窗口
