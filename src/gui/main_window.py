@@ -16,9 +16,11 @@ class MainWindow(QWidget):
         self.setGeometry(800, 500, 400, 300)
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
-    # def toggle_visibility(self):
-    #     if self.isVisible():
-    #         self.hide()
-    #     else:
-    #         self.showNormal()
-    #         self.activateWindow()
+    def toggle_visibility(self):
+        if self.isVisible():
+            self.hide()
+        else:
+            self.showNormal()
+            self.activateWindow()
+            # self.raise_()
+            # self.input_box.setFocus()

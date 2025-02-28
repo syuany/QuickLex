@@ -13,8 +13,8 @@ class TrayIcon(QSystemTrayIcon):
         menu = QMenu()
 
         toggle_action = menu.addAction("显示/隐藏窗口")
-        # toggle_action.triggered.connect(self.main_window.toggle_visibility)
-        toggle_action.triggered.connect(self.toggle_window)
+        toggle_action.triggered.connect(self.main_window.toggle_visibility)
+        # toggle_action.triggered.connect(self.toggle_window)
 
         menu.addSeparator()
 
@@ -23,12 +23,14 @@ class TrayIcon(QSystemTrayIcon):
 
         self.setContextMenu(menu)
 
-    def toggle_window(self):
-        if self.main_window.isVisible():
-            self.main_window.hide()
-        else:
-            self.main_window.showNormal()
-            self.main_window.activateWindow()
+    # def toggle_window(self):
+    #     if self.main_window.isVisible():
+    #         self.main_window.hide()
+    #     else:
+    #         self.main_window.showNormal()
+    #         self.main_window.activateWindow()
+    #         # self.raise_()
+    #         # self.input_box.setFocus()
 
     def cleanup_exit(self):
         self.setVisible(False)
