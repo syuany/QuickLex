@@ -18,14 +18,11 @@ def main():
     window = MainWindow()
 
     icon_path = r"E:\workspace\class_101\QuickLex\resources\icon.png"
-    # print(os.getcwd())
-    if not os.path.exists(icon_path):
-        print("icon not found")
-
     tray = TrayIcon(window, icon_path)
     tray.show()
 
     window.show()
+    # window.hide()
 
     sys.exit(app.exec_())
 
