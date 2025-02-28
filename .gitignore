@@ -171,8 +171,7 @@ cython_debug/
 .pypirc
 <<<<<<< HEAD
 
-# dictionary too big
-# resources/
-resources/data/
+# dictionary, too big
+data/
 =======
 >>>>>>> e0b58b47c13d711cfe7c13cddea20c11fab6f6ca
