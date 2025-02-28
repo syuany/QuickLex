@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QLabel
 from PyQt5.QtCore import Qt
 
 
@@ -16,11 +16,21 @@ class MainWindow(QWidget):
         self.setGeometry(800, 500, 400, 300)
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
+        layout = QVBoxLayout()
+        label = QLabel("input")
+        layout.addWidget(label)
+
+        self.input_box = QLineEdit()
+        self.input_box.setPlaceholderText("输入单词")
+        layout.addWidget(self.input_box)
+
+        self.setLayout(layout)
+
     def toggle_visibility(self):
         if self.isVisible():
             self.hide()
         else:
             self.showNormal()
             self.activateWindow()
-            # self.raise_()
-            # self.input_box.setFocus()
+            self.raise_()
+            self.input_box.setFocus()
