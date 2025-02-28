@@ -2,8 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication
 from gui.main_window import MainWindow
 from core.tray import TrayIcon
-
-import os
+from core.hotkey import HotkeyManager
 
 
 def main():
@@ -19,8 +18,12 @@ def main():
 
     icon_path = r"E:\workspace\class_101\QuickLex\resources\icon.png"
     tray = TrayIcon(window, icon_path)
-    tray.show()
 
+    hotkey = HotkeyManager(window)
+    app.installNativeEventFilter(hotkey)
+    hotkey.register_hotkey()
+
+    tray.show()
     window.show()
     # window.hide()
 
