@@ -10,11 +10,6 @@ def main():
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
-    # Windows平台图标修复
-    # if sys.platform == "win32":
-    #     import ctypes
-    #     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("dictapp")
-
     # 创建主窗口实例
     window = MainWindow()
 
