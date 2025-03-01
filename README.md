@@ -11,4 +11,12 @@ Free Quick English to Chinese Dictionary.
 本地词库我用的是韦神的[ECDICT](https://github.com/skywind3000/ECDICT.git)，其他词库可能要改下数据库接口。
 
 程序入口：main.py
+支持功能：
+
+- 全局快捷键显示/隐藏窗口（Ctrl + 1）
+- 默认情况（无输入）窗口只有一个输入框，输入单词后窗口自动根据查询内容延申窗口
+- 简约的UI界面
+
+![non-text](non-text.png)
+![result](result.png)
 
