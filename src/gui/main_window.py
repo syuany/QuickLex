@@ -62,7 +62,7 @@ class MainWindow(QWidget, Ui_DictionaryWidget):
         self.search_timer.stop()
         self.clean_old_results()
         if text.strip():
-            self.search_timer.start(300)
+            self.search_timer.start(180)
         else:
             self.resultScrollArea.setVisible(False)
         self.adjust_window_height()
