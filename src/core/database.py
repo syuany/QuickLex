@@ -1,11 +1,24 @@
 import sqlite3
 from pathlib import Path
 from typing import Optional, Dict
+import os, sys
+
+
+def get_date_path():
+    dev_path = os.path.join(os.path.dirname(__file__), "../../data/ecdict.db")
+    if getattr(sys, "frozen", False):
+        base_path = os.path.dirname(sys.executable)
+        return os.path.join(base_path, "data/ecdict.db")
+    elif os.path.exists(dev_path):
+        return dev_path
+    else:
+        raise FileNotFoundError("DB NOT FOUND")
 
 
 class DictionaryDB:
-    def __init__(self, db_path: str = "data/ecdict.db"):
+    def __init__(self):
         # 初始化DictionaryDB，设置数据库路径
+        db_path = get_date_path()
         self.db_path = Path(db_path)
         # self._create_table()
 
@@ -51,5 +64,5 @@ class DictionaryDB:
             return [dict(row) for row in cursor.fetchall()]
 
     def import_from_csv(self, csv_path: str):
-        # 从CSV文件导入数据到数据库（待实现）
+        # 从CSV文件导入数据到数据库
         pass  # TODO
