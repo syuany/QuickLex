@@ -91,6 +91,7 @@ class MainWindow(QWidget, Ui_DictionaryWidget):
         # 处理空结果
         if not results:
             self.add_result_item("Word not found", "#999")
+            self.add_result_item("", "#999")
             return
 
         # 添加新结果
@@ -101,19 +102,19 @@ class MainWindow(QWidget, Ui_DictionaryWidget):
         self.adjust_window_height()
         self.resultScrollArea.setVisible(True)
 
-    def add_dictionary_item(self, item: Dict, highlight_pattern):
-        def create_label(text, color):
-            label = QLabel(text)
-            label.setWordWrap(True)
-            label.setStyleSheet(
-                f"""
-            color: {color};
-            margin: 2px 0;
-            font-size: 40px;
-            """
-            )
-            return label
+    def create_label(self, text, color):
+        label = QLabel(text)
+        label.setWordWrap(True)
+        label.setStyleSheet(
+            f"""
+        color: {color};
+        margin: 2px 0;
+        font-size: 40px;
+        """
+        )
+        return label
 
+    def add_dictionary_item(self, item: Dict, highlight_pattern):
         widget = QWidget()
         layout = QVBoxLayout(widget)
 
@@ -121,20 +122,20 @@ class MainWindow(QWidget, Ui_DictionaryWidget):
         word = self.highlight_text(item.get("word", ""), highlight_pattern)
         phonetic = f'<span style="color:#666">[{item.get("phonetic", "")}]</span>'
         if item.get("phonetic", ""):
-            layout.addWidget(create_label(f"{word} {phonetic}", "#333"))
+            layout.addWidget(self.create_label(f"{word} {phonetic}", "#333"))
         else:
-            layout.addWidget(create_label(f"{word}", "#333"))
+            layout.addWidget(self.create_label(f"{word}", "#333"))
         # 释义
         definition = self.highlight_text(item.get("definition", ""), highlight_pattern)
         if definition:
-            layout.addWidget(create_label(definition, "#555"))
+            layout.addWidget(self.create_label(definition, "#555"))
 
         # 翻译
         translation = self.highlight_text(
             item.get("translation", ""), highlight_pattern
         )
         if translation:
-            layout.addWidget(create_label(translation, "#777"))
+            layout.addWidget(self.create_label(translation, "#777"))
 
         self.resultsLayout.addWidget(widget)
 
@@ -165,16 +166,12 @@ class MainWindow(QWidget, Ui_DictionaryWidget):
         self.size_anim.start()
 
     def add_result_item(self, text: str, color: str):
-        label = QLabel(text)
-        # label.setAlignment(Qt.AlignCenter)
-        label.setStyleSheet(
-            f"""
-            color: {color};
-            padding: 5px;
-            font-size: 45px;
-            """
-        )
-        self.resultsLayout.addWidget(label)
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.addWidget(self.create_label(text, color))
+        self.resultsLayout.addWidget(widget)
+        self.adjust_window_height()
+        self.resultScrollArea.setVisible(True)
 
     def toggle_visibility(self):
         if self.isVisible():
