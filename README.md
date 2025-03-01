@@ -17,6 +17,11 @@ Free Quick English to Chinese Dictionary.
 - 默认情况（无输入）窗口只有一个输入框，输入单词后窗口自动根据查询内容延申窗口
 - 简约的UI界面
 
+### 初始窗口
+
 ![non-text](non-text.png)
+
+### 查询结果
+
 ![result](result.png)
 
