@@ -32,4 +32,4 @@ class Ui_DictionaryWidget(object):
 
     def retranslateUi(self, DictionaryWidget):
         _translate = QtCore.QCoreApplication.translate
-        DictionaryWidget.setWindowTitle(_translate("DictionaryWidget", "Dictionary"))
+        DictionaryWidget.setWindowTitle(_translate("DictionaryWidget", "QuickLex"))
