@@ -4,6 +4,7 @@ from PyQt5.QtGui import QPainterPath, QPainter, QColor
 from core.database import DictionaryDB
 from typing import Optional, List, Dict
 from .ui_main_window import Ui_DictionaryWidget
+from core.utils import resource_path
 import re
 
 
@@ -11,9 +12,10 @@ class MainWindow(QWidget, Ui_DictionaryWidget):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        css_path = resource_path("resources/styles/main_window.css")
 
         # 样式设置
-        with open("resources/style/main_window.css", encoding="utf-8") as f:
+        with open(css_path, encoding="utf-8") as f:
             self.setStyleSheet(f.read())
 
         # 窗口初始化
