@@ -2,6 +2,7 @@ import win32con
 import win32gui
 from PyQt5.QtCore import QAbstractNativeEventFilter, QTimer
 import ctypes
+from ctypes import wintypes
 
 
 class HotkeyManager(QAbstractNativeEventFilter):
