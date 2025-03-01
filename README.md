@@ -17,6 +17,13 @@ Free Quick English to Chinese Dictionary.
 - 默认情况（无输入）窗口只有一个输入框，输入单词后窗口自动根据查询内容延申窗口
 - 简约的UI界面
 
+## TODO List
+
+- 查询缓存机制
+- 后台内存占用优化
+- 修复特定情况下的窗口伸缩BUG
+- 用户交互优化
+
 ### 初始窗口
 
 ![non-text](non-text.png)
