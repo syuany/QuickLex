@@ -173,5 +173,9 @@ cython_debug/
 
 # dictionary, too big
 data/
+
+# packing
+upx.exe
+version_info.txt
 =======
 >>>>>>> e0b58b47c13d711cfe7c13cddea20c11fab6f6ca
