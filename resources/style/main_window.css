@@ -1,0 +1,41 @@
+/* 窗体整体样式 */
+QWidget {
+    background: transparent;
+}
+
+QScrollArea {
+    border: none;
+    background: transparent;
+}
+
+/* 输入框 */
+QLineEdit {
+    background: rgba(245,245,245,0.9);
+    border-radius: 15px;
+    padding: 8px 15px;
+    font-size: 50px;
+    min-width: 250px;
+    border: none;
+}
+
+QScrollBar:vertical{
+    width: 6px;
+    background: rgba(200,200,200,50);
+    border-radius:3px;
+}
+
+QScrollBar::handle:vertical{
+    background: rgba(150,150,150,100);
+    border-radius: 3px;
+}
+
+/* QLabel{
+    background: rgba(255,255,255,0.8);
+    border-radius: 8px;
+    padding: 5px;
+    margin: 5px 0;
+} */
+
+
+
+

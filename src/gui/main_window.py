@@ -1,106 +1,211 @@
-from PyQt5.QtCore import Qt, QTimer, QRegExp
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QTextEdit
-from PyQt5.QtGui import QRegExpValidator
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QPainterPath, QPainter, QColor
 from core.database import DictionaryDB
 from typing import Optional, List, Dict
+from .ui_main_window import Ui_DictionaryWidget
 import re
 
 
-class MainWindow(QWidget):
+class MainWindow(QWidget, Ui_DictionaryWidget):
     def __init__(self):
-        # 初始化MainWindow，设置UI和关闭行为
         super().__init__()
-        self.init_ui()
-        self.setup_close_behavior()
+        self.setupUi(self)
+
+        # 样式设置
+        with open("resources/style/main_window.css", encoding="utf-8") as f:
+            self.setStyleSheet(f.read())
+
+        # 窗口初始化
+        self.init_window()
+        self.init_behavior()
+
+        # 数据库与定时器
         self.db = DictionaryDB()
         self.search_timer = QTimer()
         self.search_timer.setSingleShot(True)
-        self.search_timer.timeout.connect(self._perform_search)
+        self.search_timer.timeout.connect(self.perform_search)
 
-    def setup_close_behavior(self):
-        # 设置关闭行为为隐藏窗口而不是关闭
-        self.closeEvent = lambda event: self.hide()
+    def init_window(self):
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setFixedWidth(800)
 
-    def init_ui(self):
-        # 初始化用户界面
-        self.setWindowTitle("QuickLex")
-        self.setGeometry(600, 200, 1000, 1000)
+        # 高度控制参数
+        self.collapsed_height = 100
+        self.expanded_height = QApplication.desktop().availableGeometry().height() - 100
+        self.setMinimumHeight(self.collapsed_height)
 
-        self.input_box = QLineEdit()
-        self.result_area = QTextEdit()
-        self.result_area.setReadOnly(True)
+        # 初始位置
+        screen = QApplication.primaryScreen().geometry()
+        self.move(screen.width() - self.width() - 20, 60)
 
-        layout = QVBoxLayout()
-        self.input_box.setPlaceholderText("input word")
-        layout.addWidget(self.input_box)
-        layout.addWidget(self.result_area)
-        self.setLayout(layout)
+        # 输入框配置
+        self.searchInput.setPlaceholderText("Search word...")
+        self.searchInput.textChanged.connect(self.on_text_changed)
+        self.searchInput.setClearButtonEnabled(True)
 
-        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        # 滚动区域优化
+        self.resultsLayout.setContentsMargins(0, 5, 0, 5)
+        self.resultsLayout.setSpacing(8)
+        self.resultScrollArea.setVisible(False)
 
-        self.input_box.setValidator(QRegExpValidator(QRegExp("[a-zA-Z ]*")))
-        self.input_box.textChanged.connect(self.on_text_changed)
+    def init_behavior(self):
+        # 动画系统
+        self.size_anim = QPropertyAnimation(self, b"size")
+        self.size_anim.setDuration(200)
+
+        # 关闭行为
+        self.closeEvent = lambda e: self.hide()
 
     def on_text_changed(self, text):
         self.search_timer.stop()
+        self.clean_old_results()
         if text.strip():
-            self.result_area.setText("搜索中...")
-            self.search_timer.start(200)
+            self.search_timer.start(300)
         else:
-            self.result_area.clear()
+            self.resultScrollArea.setVisible(False)
+        self.adjust_window_height()
 
-    def _perform_search(self):
-        query_text = self.input_box.text().strip().lower()
-        results = self.db.fuzzy_query(query_text)
-        self.display_results(results)
+    def perform_search(self):
+        query = self.searchInput.text().strip().lower()
+        if query:
+            results = self.db.fuzzy_query(query)
+            self.display_results(results or [])
+        else:
+            self.clean_old_results()
+            self.resultScrollArea.setVisible(False)
 
-    def display_results(self, results: Optional[List[Dict]]):
+    def clean_old_results(self):
+        # 清除旧结果
+        while self.resultsLayout.count():
+            if widget := self.resultsLayout.takeAt(0).widget():
+                widget.deleteLater()
+
+        self.scrollContent.updateGeometry()
+        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
+
+    def display_results(self, results: List[Dict]):
+        self.clean_old_results()
+
+        # 处理空结果
         if not results:
-            self.result_area.setText("未找到该单词")
+            self.add_result_item("Word not found", "#999")
+            # self.adjust_window_height()
             return
 
-        result_text = ""
-        keyword = self.input_box.text().strip()
+        # 添加新结果
+        keyword = re.compile(re.escape(self.searchInput.text().strip()), re.IGNORECASE)
+        for item in results:
+            self.add_dictionary_item(item, keyword)
 
-        # 创建正则表达式，忽略大小写
-        keyword_regex = re.compile(re.escape(keyword), re.IGNORECASE)
+        self.adjust_window_height()
+        self.resultScrollArea.setVisible(True)
 
-        for idx, item in enumerate(results, 1):
-            word = item.get("word", "")
-            phonetic = item.get("phonetic", "")
-            definition = item.get("definition", "")
-            translation = item.get("translation", "")
-
-            # 使用正则表达式替换关键字
-            formatted_word = keyword_regex.sub(
-                r'<span style="color: #FF6600;">\g<0></span>', word
-            )
-            formatted_phonetic = keyword_regex.sub(
-                r'<span style="color: #FF6600;">\g<0></span>', phonetic
-            )
-            formatted_definition = keyword_regex.sub(
-                r'<span style="color: #FF6600;">\g<0></span>', definition
-            )
-            formatted_translation = keyword_regex.sub(
-                r'<span style="color: #FF6600;">\g<0></span>', translation
-            )
-
-            result_text += f"""
-            <p><strong>{formatted_word}</strong> {phonetic}</p>
-            <p>{formatted_definition}</p>
-            <p>{formatted_translation}</p>
+    def add_dictionary_item(self, item: Dict, highlight_pattern):
+        def create_label(text, color):
+            label = QLabel(text)
+            label.setWordWrap(True)
+            label.setStyleSheet(
+                f"""
+            color: {color};
+            margin: 2px 0;
+            font-size: 40px;
             """
-            if phonetic:
-                result_text = result_text.replace(phonetic, f"[{phonetic}]")
+            )
+            return label
 
-        self.result_area.setHtml(result_text)
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+
+        # 单词行
+        word = self.highlight_text(item.get("word", ""), highlight_pattern)
+        phonetic = f'<span style="color:#666">[{item.get("phonetic", "")}]</span>'
+        layout.addWidget(create_label(f"{word} {phonetic}", "#333"))
+
+        # 释义
+        definition = self.highlight_text(item.get("definition", ""), highlight_pattern)
+        layout.addWidget(create_label(definition, "#555"))
+
+        # 翻译
+        translation = self.highlight_text(
+            item.get("translation", ""), highlight_pattern
+        )
+        layout.addWidget(create_label(translation, "#777"))
+
+        self.resultsLayout.addWidget(widget)
+
+    def highlight_text(self, text: str, pattern):
+        return pattern.sub(
+            r'<span style="color: #FF6600; font-weight:600">\g<0></span>', text
+        )
+
+    def adjust_window_height(self):
+        self.scrollContent.updateGeometry()
+        self.resultsLayout.activate()
+        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
+
+        content_height = (
+            self.scrollContent.sizeHint().height() + self.searchInput.height()
+        )
+        target_height = min(
+            max(content_height, self.collapsed_height), self.expanded_height
+        )
+
+        if abs(self.height() - target_height) < 10:
+            return
+
+        if self.size_anim.state == QPropertyAnimation.Running:
+            self.size_anim.stop()
+        self.size_anim.setStartValue(QSize(self.width(), self.height()))
+        self.size_anim.setEndValue(QSize(self.width(), target_height))
+        self.size_anim.start()
+
+    def add_result_item(self, text: str, color: str):
+        label = QLabel(text)
+        # label.setAlignment(Qt.AlignCenter)
+        label.setStyleSheet(
+            f"""
+            color: {color};
+            padding: 5px;
+            font-size: 45px;
+            """
+        )
+        self.resultsLayout.addWidget(label)
 
     def toggle_visibility(self):
-        # 切换窗口的可见性，显示或隐藏窗口
         if self.isVisible():
             self.hide()
         else:
             self.showNormal()
             self.activateWindow()
             self.raise_()
-            self.input_box.setFocus()
+            self.searchInput.setFocus()
+
+    # 窗口拖动功能
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.drag_pos = event.globalPos() - self.pos()
+
+    def mouseMoveEvent(self, event):
+        if hasattr(self, "drag_pos"):
+            self.move(event.globalPos() - self.drag_pos)
+
+    def mouseReleaseEvent(self, event):
+        if hasattr(self, "drag_pos"):
+            del self.drag_pos
+
+    # 圆角绘制
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(self.rect()).adjusted(1, 1, -1, -1), 15, 15)
+
+        # 背景绘制
+        painter.fillPath(path, QColor(255, 255, 255, 245))
+
+        # 边框阴影
+        painter.setPen(QColor(0, 0, 0, 30))
+        painter.drawPath(path)
