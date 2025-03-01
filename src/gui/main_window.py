@@ -91,7 +91,6 @@ class MainWindow(QWidget, Ui_DictionaryWidget):
         # 处理空结果
         if not results:
             self.add_result_item("Word not found", "#999")
-            # self.adjust_window_height()
             return
 
         # 添加新结果
@@ -121,17 +120,21 @@ class MainWindow(QWidget, Ui_DictionaryWidget):
         # 单词行
         word = self.highlight_text(item.get("word", ""), highlight_pattern)
         phonetic = f'<span style="color:#666">[{item.get("phonetic", "")}]</span>'
-        layout.addWidget(create_label(f"{word} {phonetic}", "#333"))
-
+        if item.get("phonetic", ""):
+            layout.addWidget(create_label(f"{word} {phonetic}", "#333"))
+        else:
+            layout.addWidget(create_label(f"{word}", "#333"))
         # 释义
         definition = self.highlight_text(item.get("definition", ""), highlight_pattern)
-        layout.addWidget(create_label(definition, "#555"))
+        if definition:
+            layout.addWidget(create_label(definition, "#555"))
 
         # 翻译
         translation = self.highlight_text(
             item.get("translation", ""), highlight_pattern
         )
-        layout.addWidget(create_label(translation, "#777"))
+        if translation:
+            layout.addWidget(create_label(translation, "#777"))
 
         self.resultsLayout.addWidget(widget)
 
